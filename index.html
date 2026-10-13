@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-[#efeeee] text-slate-800">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atelier CM Community • Tribe DHC</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Google Fonts: Montserrat -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <!-- PeerJS for zero-server real-time multi-user synchronization across remote CMs -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Montserrat"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            palette: {
+              roseMain: '#fca2ae',
+              roseLight: '#fddade',
+              mintSoft: '#d7ebe7',
+              beigeSoft: '#efeadc',
+              grayBg: '#efeeee',
+              darkText: '#1e293b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #efeeee;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    /* Sticky post-it animations */
+    @keyframes popIn {
+      0% { transform: scale(0.94); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .postit-enter {
+      animation: popIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="min-h-full flex flex-col font-sans selection:bg-[#fca2ae] selection:text-slate-900 bg-[#efeeee]">
+
+  <!-- TOP BAR / HEADER -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 py-3 shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-4">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-[#fca2ae] flex items-center justify-center shadow-md shadow-[#fca2ae]/30 text-white">
+            <i class="fa-solid fa-people-roof text-lg"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold tracking-widest text-[#e87082] uppercase">Tribe DHC</span>
+              <span class="px-2 py-0.5 text-[10px] font-semibold bg-[#efeadc] text-slate-700 rounded-full border border-slate-300">CM Community</span>
+            </div>
+            <h1 class="text-base sm:text-lg font-bold text-slate-800 tracking-tight">Atelier Flash des 4 Piliers</h1>
+          </div>
+        </div>
+
+        <!-- Mobile participant badge -->
+        <div class="lg:hidden">
+          <button id="mobileUserBtn" onclick="openProfileModal()" class="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-semibold text-slate-700 flex items-center gap-2 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="mobileCurrentUserName">Mon Profil</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- TIMER & CADRAGE CADENCE -->
+      <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-white px-3 py-1.5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-2 font-mono text-xl sm:text-2xl font-bold tracking-wider text-[#e87082] px-2" id="timerDisplay">
+          05:00
+        </div>
+        <div class="h-6 w-px bg-slate-200"></div>
+        <button id="startTimerBtn" onclick="toggleTimer()" class="px-3 py-1.5 rounded-xl bg-[#fca2ae] hover:bg-[#fb8e9d] text-slate-900 text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+          <i class="fa-solid fa-play" id="timerPlayIcon"></i>
+          <span id="timerPlayText">Démarrer (5 min)</span>
+        </button>
+        <button onclick="resetTimer(5)" title="Remettre à 5 min (Brainstorm silencieux)" class="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-[#efeeee] rounded-lg text-xs transition">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+        <button onclick="resetTimer(10)" title="Passer à 10 min (Débat & Convergence)" class="px-2 py-1 bg-[#efeadc] hover:bg-[#e4ddcb] text-slate-700 rounded-lg text-[11px] font-semibold transition">
+          +10m débat
+        </button>
+      </div>
+
+      <!-- ACTION BUTTONS: Live Sharing & Export -->
+      <div class="flex items-center gap-2 w-full lg:w-auto justify-end">
+        <!-- Live Sync Status -->
+        <div class="relative">
+          <button id="liveRoomBtn" onclick="toggleRoomModal()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-xs font-medium text-slate-700 flex items-center gap-2 transition shadow-sm" title="Connexion multi-utilisateurs en live">
+            <span class="relative flex h-2 w-2">
+              <span id="livePulse" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span id="liveDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span id="roomStatusText">Live Session</span>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+          </button>
+        </div>
+
+        <!-- Cheat sheet "Pourquoi ?" button for SL & TL -->
+        <button onclick="openWhyModal()" class="px-3 py-1.5 rounded-xl bg-[#efeadc] hover:bg-[#e4ddcb] text-slate-800 border border-[#ded5be] text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Mémo des impacts Devoteam pour le Tribe Leader & Squad Leader">
+          <i class="fa-solid fa-lightbulb text-amber-500"></i>
+          <span class="hidden sm:inline">Mémo Sens Biz</span>
+        </button>
+
+        <!-- New Post-it trigger -->
+        <button onclick="openNewPostItModal()" class="px-3.5 py-1.5 rounded-xl bg-[#fca2ae] hover:bg-[#fb8e9d] text-slate-900 text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
+          <i class="fa-solid fa-plus"></i>
+          <span>Poser un post-it</span>
+        </button>
+
+        <!-- Export Summary for Slack / Teams -->
+        <button onclick="openExportModal()" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-medium flex items-center gap-1.5 transition shadow-sm" title="Générer la synthèse prête à copier pour Teams/Slack">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          <span class="hidden sm:inline">Synthèse</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- SUB-HEADER: Guidelines & Color Legend -->
+  <section class="bg-[#efeadc]/70 border-b border-slate-200/80 px-4 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+      
+      <!-- Instructions & Context -->
+      <div class="flex items-center gap-2 text-slate-700">
+        <i class="fa-solid fa-stopwatch text-[#e87082] text-sm"></i>
+        <span><strong>Consigne Tribe DHC :</strong> 5 min silencieuses pour poser vos cartes sur les 4 piliers. 1 carte = 1 idée ou 1 irritant.</span>
+      </div>
+
+      <!-- Color Legend / Filters -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-slate-500 text-[11px] font-medium mr-1">Filtre :</span>
+        <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-800 text-white transition shadow-sm">
+          Tous (<span id="count-all">0</span>)
+        </button>
+        <button onclick="setFilter('green')" id="filter-green" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#d7ebe7] text-teal-800 border border-[#b2dad2] hover:bg-[#c9e4de] transition">
+          🟢 Ce qui roule (<span id="count-green">0</span>)
+        </button>
+        <button onclick="setFilter('red')" id="filter-red" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#fddade] text-rose-800 border border-[#fca2ae] hover:bg-[#fad0d6] transition">
+          🔴 Ce qui bloque / Irritant (<span id="count-red">0</span>)
+        </button>
+        <button onclick="setFilter('blue')" id="filter-blue" class="filter-btn px-2.5 py-1 rounded-lg text-xs font-semibold bg-[#efeadc] text-amber-900 border border-[#ded5be] hover:bg-[#e6decd] transition">
+          🟡 Angle mort / Idée (<span id="count-blue">0</span>)
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- MAIN BOARD: 4 PILLARS COLUMNS -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+    <!-- PILIER 1: SOCLE ADMIN & CONTRAT -->
+    <div class="flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden" data-pillar="admin">
+      <!-- Column Header -->
+      <div class="p-3.5 bg-[#efeadc]/50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[#efeadc] border border-[#ded5be] text-slate-700 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-file-invoice"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+              1. Socle Admin &amp; Contrat
+              <span id="colCount-admin" class="text-[11px] font-mono px-1.5 py-0.2 bg-white text-slate-600 rounded-md border border-slate-200">0</span>
+            </h2>
+            <p class="text-[11px] text-slate-500">CRA, Congés S-4, ODM, Frais...</p>
+          </div>
+        </div>
+        <button onclick="quickAddPostIt('admin')" title="Ajouter dans Socle Admin" class="w-7 h-7 rounded-lg bg-white hover:bg-[#fca2ae] text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition shadow-sm">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Sticky Notes List -->
+      <div id="pillar-admin" class="flex-1 p-3 space-y-3 overflow-y-auto max-h-[calc(100vh-250px)] min-h-[160px] bg-[#efeeee]/40">
+        <!-- Dynamic Post-its will inject here -->
+      </div>
+    </div>
+
+    <!-- PILIER 2: RADAR BIZ & STAFFING -->
+    <div class="flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden" data-pillar="staffing">
+      <!-- Column Header -->
+      <div class="p-3.5 bg-[#d7ebe7]/40 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[#d7ebe7] border border-[#b2dad2] text-teal-800 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-crosshairs"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+              2. Radar Biz &amp; Staffing
+              <span id="colCount-staffing" class="text-[11px] font-mono px-1.5 py-0.2 bg-white text-slate-600 rounded-md border border-slate-200">0</span>
+            </h2>
+            <p class="text-[11px] text-slate-500">Fins de mission M-2, intercontrat...</p>
+          </div>
+        </div>
+        <button onclick="quickAddPostIt('staffing')" title="Ajouter dans Radar Staffing" class="w-7 h-7 rounded-lg bg-white hover:bg-[#fca2ae] text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition shadow-sm">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Sticky Notes List -->
+      <div id="pillar-staffing" class="flex-1 p-3 space-y-3 overflow-y-auto max-h-[calc(100vh-250px)] min-h-[160px] bg-[#efeeee]/40">
+        <!-- Dynamic Post-its will inject here -->
+      </div>
+    </div>
+
+    <!-- PILIER 3: COMPÉTENCES & CARRIÈRE -->
+    <div class="flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden" data-pillar="career">
+      <!-- Column Header -->
+      <div class="p-3.5 bg-[#fddade]/40 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[#fddade] border border-[#fca2ae] text-rose-800 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+              3. Compétences &amp; Carrière
+              <span id="colCount-career" class="text-[11px] font-mono px-1.5 py-0.2 bg-white text-slate-600 rounded-md border border-slate-200">0</span>
+            </h2>
+            <p class="text-[11px] text-slate-500">Certifs Cloud, EAA, trajectoires...</p>
+          </div>
+        </div>
+        <button onclick="quickAddPostIt('career')" title="Ajouter dans Compétences & Carrière" class="w-7 h-7 rounded-lg bg-white hover:bg-[#fca2ae] text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition shadow-sm">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Sticky Notes List -->
+      <div id="pillar-career" class="flex-1 p-3 space-y-3 overflow-y-auto max-h-[calc(100vh-250px)] min-h-[160px] bg-[#efeeee]/40">
+        <!-- Dynamic Post-its will inject here -->
+      </div>
+    </div>
+
+    <!-- PILIER 4: LIEN & RÉTENTION RH -->
+    <div class="flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden" data-pillar="retention">
+      <!-- Column Header -->
+      <div class="p-3.5 bg-[#fca2ae]/30 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-[#fca2ae]/50 border border-[#fca2ae] text-rose-900 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-heart-pulse"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+              4. Lien &amp; Rétention RH
+              <span id="colCount-retention" class="text-[11px] font-mono px-1.5 py-0.2 bg-white text-slate-600 rounded-md border border-slate-200">0</span>
+            </h2>
+            <p class="text-[11px] text-slate-500">Signaux faibles, proximité, moral...</p>
+          </div>
+        </div>
+        <button onclick="quickAddPostIt('retention')" title="Ajouter dans Lien & Rétention" class="w-7 h-7 rounded-lg bg-white hover:bg-[#fca2ae] text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition shadow-sm">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Sticky Notes List -->
+      <div id="pillar-retention" class="flex-1 p-3 space-y-3 overflow-y-auto max-h-[calc(100vh-250px)] min-h-[160px] bg-[#efeeee]/40">
+        <!-- Dynamic Post-its will inject here -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER / STATS BAR -->
+  <footer class="bg-white border-t border-slate-200 px-4 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+      <div class="flex items-center gap-3">
+        <span>Connecté en tant que : <strong id="footerUserLabel" class="text-[#e87082] cursor-pointer underline font-bold" onclick="openProfileModal()">Squad Leader</strong></span>
+        <span>•</span>
+        <span>Total post-its : <strong id="totalStickyCount" class="text-slate-900 font-bold">0</strong></span>
+        <span>•</span>
+        <span>Votes enregistrés : <strong id="totalVotesCount" class="text-slate-900 font-bold">0</strong></span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="loadSampleDiscussionData()" class="text-slate-600 hover:text-slate-900 transition underline">
+          Charger exemples DHC
+        </button>
+        <span>•</span>
+        <button onclick="confirmClearBoard()" class="text-rose-600 hover:text-rose-700 transition">
+          Réinitialiser le tableau
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL: AJOUTER UN POST-IT (SANS SUGGESTIONS) -->
+  <div id="postItModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-popIn">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-[#fca2ae]"></span>
+          <h3 class="text-base font-bold text-slate-800" id="modalPostItTitle">Nouveau Post-It</h3>
+        </div>
+        <button onclick="closePostItModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="postItForm" onsubmit="handlePostItSubmit(event)" class="space-y-4">
+        <!-- Pilier cible -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Pilier concerné</label>
+          <select id="inputPillar" class="w-full bg-[#efeeee] border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-[#fca2ae]">
+            <option value="admin">1. Socle Admin & Contrat (CRA, Congés, ODM...)</option>
+            <option value="staffing">2. Radar Biz & Staffing (Fins de mission M-2, intercontrat...)</option>
+            <option value="career">3. Compétences & Carrière (Certifs Cloud, EAA...)</option>
+            <option value="retention">4. Lien & Rétention RH (Proximité, moral, rituels...)</option>
+          </select>
+        </div>
+
+        <!-- Diagnostic / Catégorie -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Diagnostic / Météo du sujet</label>
+          <div class="grid grid-cols-3 gap-2">
+            <label class="cursor-pointer border border-[#b2dad2] bg-[#d7ebe7]/70 p-2.5 rounded-xl flex flex-col items-center gap-1 hover:bg-[#d7ebe7] transition">
+              <input type="radio" name="postItColor" value="green" checked class="text-teal-600 focus:ring-0">
+              <span class="text-xs font-bold text-teal-800">🟢 Ça roule</span>
+              <span class="text-[10px] text-teal-700 text-center">Fluide & maîtrisé</span>
+            </label>
+            <label class="cursor-pointer border border-[#fca2ae] bg-[#fddade]/70 p-2.5 rounded-xl flex flex-col items-center gap-1 hover:bg-[#fddade] transition">
+              <input type="radio" name="postItColor" value="red" class="text-rose-500 focus:ring-0">
+              <span class="text-xs font-bold text-rose-800">🔴 Ça bloque</span>
+              <span class="text-[10px] text-rose-700 text-center">Irritant / Manque de temps</span>
+            </label>
+            <label class="cursor-pointer border border-[#ded5be] bg-[#efeadc] p-2.5 rounded-xl flex flex-col items-center gap-1 hover:bg-[#e4ddcb] transition">
+              <input type="radio" name="postItColor" value="blue" class="text-amber-700 focus:ring-0">
+              <span class="text-xs font-bold text-amber-900">🟡 Angle mort</span>
+              <span class="text-[10px] text-amber-800 text-center">Idée / Jamais fait</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Contenu du Post-it -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-semibold text-slate-700">Constat ou proposition concrète</label>
+            <span class="text-[11px] text-slate-500">Précis & percutant</span>
+          </div>
+          <textarea id="inputText" rows="3" required placeholder="Saisissez votre constat ou irritant..." class="w-full bg-[#efeeee] border border-slate-300 rounded-xl p-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#fca2ae]"></textarea>
+        </div>
+
+        <!-- Auteur / CM -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Votre Prénom / Rôle</label>
+            <input type="text" id="inputAuthor" required class="w-full bg-[#efeeee] border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-[#fca2ae]">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Besoin d'aide ?</label>
+            <select id="inputNeedHelp" class="w-full bg-[#efeeee] border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-[#fca2ae]">
+              <option value="Non">Non (Autonome)</option>
+              <option value="Oui - Outil">Oui (Outil / Process)</option>
+              <option value="Oui - Formation">Oui (Formation rôle)</option>
+              <option value="Oui - Temps">Oui (Charge intenable)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button type="button" onclick="closePostItModal()" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-semibold transition">
+            Annuler
+          </button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-[#fca2ae] hover:bg-[#fb8e9d] text-slate-900 text-xs font-bold transition shadow-sm">
+            Publier sur le board
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: LE "POURQUOI" / MÉMO BUSINESS POUR LE SQUAD & TRIBE LEADER -->
+  <div id="whyModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-[#efeadc] text-amber-700 flex items-center justify-center">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-800">Mémo Facilitateur : Le "Pourquoi" des Process</h3>
+            <p class="text-xs text-slate-500">Tribe DHC • Arguments pour le Squad Leader et le Tribe Leader pendant le débat</p>
+          </div>
+        </div>
+        <button onclick="closeWhyModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <!-- Socle Admin -->
+        <div class="bg-[#efeadc]/40 p-4 rounded-xl border border-[#ded5be] space-y-2">
+          <div class="flex items-center gap-2 text-amber-800 font-bold">
+            <i class="fa-solid fa-file-invoice"></i>
+            <span>Socle Admin & CRA</span>
+          </div>
+          <p class="text-slate-700 leading-relaxed">
+            <strong>Impact Devoteam :</strong> Un CRA non validé au 28 bloque l'édition de la facture client. Pour 60 consultants dans la Tribe DHC, c'est directement des centaines de milliers d'euros de BFR en souffrance.
+          </p>
+          <p class="text-slate-600">
+            <strong>ODM :</strong> Couverture accident du travail. En cas d'accident sur site sans ODM signé, Devoteam est pénalement et juridiquement vulnérable.
+          </p>
+        </div>
+
+        <!-- Radar Biz & Staffing -->
+        <div class="bg-[#d7ebe7]/40 p-4 rounded-xl border border-[#b2dad2] space-y-2">
+          <div class="flex items-center gap-2 text-teal-800 font-bold">
+            <i class="fa-solid fa-crosshairs"></i>
+            <span>Radar Staffing (M-2)</span>
+          </div>
+          <p class="text-slate-700 leading-relaxed">
+            <strong>Impact Devoteam :</strong> Détecter une fin de mission à M-1 mène quasi-systématiquement à l'intercontrat subi (salaire sans facturation).
+          </p>
+          <p class="text-slate-600">
+            <strong>Bénéfice consultant :</strong> À M-2, les Sales et le RM ont le temps de lui trouver une mission conforme à ses souhaits tech.
+          </p>
+        </div>
+
+        <!-- Compétences & Carrière -->
+        <div class="bg-[#fddade]/40 p-4 rounded-xl border border-[#fca2ae] space-y-2">
+          <div class="flex items-center gap-2 text-rose-800 font-bold">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Compétences & Certifs</span>
+          </div>
+          <p class="text-slate-700 leading-relaxed">
+            <strong>Impact Devoteam :</strong> Maintien des partenariats Premium éditeurs et levier n°1 de revalorisation de nos TJM.
+          </p>
+          <p class="text-slate-600">
+            <strong>Bénéfice consultant :</strong> Employabilité, visibilité sur le marché et motivation renouvelée.
+          </p>
+        </div>
+
+        <!-- Lien & Rétention RH -->
+        <div class="bg-[#fca2ae]/30 p-4 rounded-xl border border-[#fca2ae] space-y-2">
+          <div class="flex items-center gap-2 text-rose-900 font-bold">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <span>Lien & Rétention RH</span>
+          </div>
+          <p class="text-slate-700 leading-relaxed">
+            <strong>Impact Devoteam :</strong> Le coût de remplacement d'un consultant parti par frustration est estimé à 6-9 mois de marge brute.
+          </p>
+          <p class="text-slate-600">
+            <strong>Rôle du CM :</strong> Capter les signaux faibles (sentiment d'isolement, micro-conflits) avant la lettre de démission.
+          </p>
+        </div>
+      </div>
+
+      <div class="p-3 bg-[#fddade]/60 border border-[#fca2ae] rounded-xl text-xs text-rose-900">
+        💡 <strong>Posture de co-animation Tribe DHC :</strong> <em>"Le but n'est pas de vous transformer en administratifs. Le but est de créer un cadre sans friction pour que vos 7-8h mensuelles aillent là où vous avez une vraie valeur humaine."</em>
+      </div>
+
+      <div class="flex justify-end">
+        <button onclick="closeWhyModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SYNTHÈSE & PLAN D'ACTION (SLACK / TEAMS READY) -->
+  <div id="exportModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-[#d7ebe7] text-teal-800 flex items-center justify-center">
+            <i class="fa-solid fa-file-export"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-800">Synthèse Flash &amp; Plan d'Action</h3>
+            <p class="text-xs text-slate-500">Tribe DHC • Formaté et prêt à copier pour Teams, Slack ou compte-rendu</p>
+          </div>
+        </div>
+        <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Quick stats summary pills -->
+      <div class="grid grid-cols-3 gap-3 text-center text-xs">
+        <div class="bg-[#d7ebe7]/50 p-2.5 rounded-xl border border-[#b2dad2]">
+          <div class="text-teal-800 font-bold text-lg" id="summaryGreenCount">0</div>
+          <div class="text-teal-700 text-[10px]">Points fluides (Vert)</div>
+        </div>
+        <div class="bg-[#fddade]/60 p-2.5 rounded-xl border border-[#fca2ae]">
+          <div class="text-rose-800 font-bold text-lg" id="summaryRedCount">0</div>
+          <div class="text-rose-700 text-[10px]">Points d'arrêt (Rouge)</div>
+        </div>
+        <div class="bg-[#efeadc] p-2.5 rounded-xl border border-[#ded5be]">
+          <div class="text-amber-900 font-bold text-lg" id="summaryBlueCount">0</div>
+          <div class="text-amber-800 text-[10px]">Idées / Pistes (Jaune)</div>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1.5">Texte formaté Markdown (Cliquez sur copier)</label>
+        <textarea id="summaryMarkdown" rows="10" readonly class="w-full bg-[#efeeee] font-mono text-xs text-slate-800 border border-slate-300 rounded-xl p-3 focus:outline-none"></textarea>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <div class="text-[11px] text-slate-500">
+          Ce résumé hiérarchise automatiquement les post-its les plus votés par les CM de la Tribe DHC.
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="downloadJsonBackup()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-download"></i> Sauvegarder JSON
+          </button>
+          <button onclick="copySummaryToClipboard()" class="px-4 py-2 bg-[#fca2ae] hover:bg-[#fb8e9d] text-slate-900 text-xs font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
+            <i class="fa-regular fa-copy" id="copyIcon"></i>
+            <span id="copyButtonText">Copier pour Teams / Slack</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GESTION DE LA ROOM / MULTI-UTILISATEUR & PROFIL -->
+  <div id="roomModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-tower-broadcast text-[#e87082]"></i>
+          <h3 class="text-base font-bold text-slate-800">Partage &amp; Synchronisation Live</h3>
+        </div>
+        <button onclick="toggleRoomModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Identity selector -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1.5">Votre Identifiant CM pour la séance</label>
+        <select id="userRoleSelect" onchange="updateCurrentUserFromSelect()" class="w-full bg-[#efeeee] border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-[#fca2ae]">
+          <option value="Squad Leader Platforms">Squad Leader Platforms (Animateur)</option>
+          <option value="Tribe Leader DHC">Tribe Leader DHC (Co-animateur)</option>
+          <option value="Career Manager 1 (Senior)">Career Manager 1 (Senior)</option>
+          <option value="Career Manager 2">Career Manager 2</option>
+          <option value="Career Manager 3">Career Manager 3</option>
+          <option value="Career Manager 4">Career Manager 4</option>
+          <option value="Career Manager 5">Career Manager 5</option>
+          <option value="Career Manager 6">Career Manager 6</option>
+          <option value="Nouveau Career Manager (<2 mois)">Nouveau Career Manager (&lt;2 mois)</option>
+        </select>
+      </div>
+
+      <!-- Share link with peers -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 mb-1.5">Lien de la session à partager aux 9 CM</label>
+        <div class="flex items-center gap-2">
+          <input type="text" id="shareRoomUrl" readonly class="flex-1 bg-[#efeeee] text-xs font-mono text-slate-700 px-3 py-2 rounded-xl border border-slate-300 focus:outline-none">
+          <button onclick="copyShareUrl()" class="px-3 py-2 bg-[#fca2ae] hover:bg-[#fb8e9d] text-slate-900 rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
+            <i class="fa-solid fa-link"></i>
+            <span>Copier</span>
+          </button>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-1.5">
+          Chaque participant de la Tribe DHC ouvrant ce lien rejoint automatiquement votre salon en direct.
+        </p>
+      </div>
+
+      <!-- Peers count -->
+      <div class="p-3 bg-[#efeadc]/50 rounded-xl border border-[#ded5be] flex items-center justify-between text-xs">
+        <span class="text-slate-700">Participants connectés en direct :</span>
+        <span id="connectedPeersCount" class="font-bold text-teal-800 font-mono">1 (Vous)</span>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="toggleRoomModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastContainer" class="fixed bottom-16 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <script>
+    // ==========================================
+    // STATE & DATA MANAGEMENT
+    // ==========================================
+    const STORAGE_KEY = 'devoteam_dhc_cm_workshop_v2';
+    const ROOM_KEY = 'dhc_workshop_room';
+
+    let currentFilter = 'all';
+    let currentUser = localStorage.getItem('cm_user_name_dhc') || 'Squad Leader Platforms';
+    let currentPillarTarget = 'admin';
+
+    // Board state
+    let boardData = {
+      notes: []
+    };
+
+    // Live BroadcastChannel for intra-browser sync
+    const broadcast = ('BroadcastChannel' in window) ? new BroadcastChannel('dhc_workshop_broadcast') : null;
+    if (broadcast) {
+      broadcast.onmessage = (event) => {
+        if (event.data && event.data.type === 'SYNC') {
+          boardData = event.data.payload;
+          renderBoard();
+        }
+      };
+    }
+
+    // ==========================================
+    // INITIALIZATION
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', () => {
+      initUserIdentity();
+      loadStoredData();
+      initPeerSync();
+      initShareUrl();
+      renderBoard();
+    });
+
+    function initUserIdentity() {
+      const select = document.getElementById('userRoleSelect');
+      if (select) {
+        select.value = currentUser;
+      }
+      document.getElementById('inputAuthor').value = currentUser;
+      document.getElementById('footerUserLabel').innerText = currentUser;
+      const mobileLabel = document.getElementById('mobileCurrentUserName');
+      if (mobileLabel) mobileLabel.innerText = currentUser.split(' ')[0];
+    }
+
+    function openProfileModal() {
+      toggleRoomModal();
+    }
+
+    function updateCurrentUserFromSelect() {
+      const select = document.getElementById('userRoleSelect');
+      currentUser = select.value;
+      localStorage.setItem('cm_user_name_dhc', currentUser);
+      document.getElementById('inputAuthor').value = currentUser;
+      document.getElementById('footerUserLabel').innerText = currentUser;
+      const mobileLabel = document.getElementById('mobileCurrentUserName');
+      if (mobileLabel) mobileLabel.innerText = currentUser.split(' ')[0];
+      showToast(`Profil mis à jour : ${currentUser}`, 'info');
+    }
+
+    function loadStoredData() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          boardData = JSON.parse(saved);
+        } else {
+          loadDefaultIntroNotes();
+        }
+      } catch (e) {
+        console.error('Error loading data', e);
+      }
+    }
+
+    function saveStateAndBroadcast() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(boardData));
+      if (broadcast) {
+        broadcast.postMessage({ type: 'SYNC', payload: boardData });
+      }
+      broadcastToPeers({ type: 'SYNC', payload: boardData });
+      renderBoard();
+    }
+
+    function loadDefaultIntroNotes() {
+      boardData.notes = [
+        {
+          id: 'note-sample-1',
+          pillar: 'admin',
+          color: 'red',
+          text: 'CRA : Les consultants oublient la date limite du 28. Beaucoup de temps perdu en relances individuelles le soir.',
+          author: 'Squad Leader Platforms',
+          needHelp: 'Oui - Outil',
+          timestamp: Date.now() - 3600000,
+          votes: 3
+        },
+        {
+          id: 'note-sample-2',
+          pillar: 'staffing',
+          color: 'blue',
+          text: 'Comment formaliser l’alerte fin de mission à M-2 vers le RM et les Sales sans passer par un tableau opaque ?',
+          author: 'Tribe Leader DHC',
+          needHelp: 'Non',
+          timestamp: Date.now() - 1800000,
+          votes: 4
+        },
+        {
+          id: 'note-sample-3',
+          pillar: 'retention',
+          color: 'green',
+          text: 'Les Tech Talks mensuels de la Tribe DHC aident énormément à garder le contact informel avec les consultants en régie.',
+          author: 'Career Manager 1 (Senior)',
+          needHelp: 'Non',
+          timestamp: Date.now() - 900000,
+          votes: 2
+        }
+      ];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(boardData));
+    }
+
+    // ==========================================
+    // RENDERING THE BOARD
+    // ==========================================
+    function renderBoard() {
+      const pillars = ['admin', 'staffing', 'career', 'retention'];
+      const counts = { admin: 0, staffing: 0, career: 0, retention: 0, green: 0, red: 0, blue: 0, total: 0, votes: 0 };
+
+      pillars.forEach(p => {
+        const el = document.getElementById(`pillar-${p}`);
+        if (el) el.innerHTML = '';
+      });
+
+      const sortedNotes = [...boardData.notes].sort((a, b) => {
+        const votesA = (a.votes || 0);
+        const votesB = (b.votes || 0);
+        if (votesB !== votesA) return votesB - votesA;
+        return b.timestamp - a.timestamp;
+      });
+
+      sortedNotes.forEach(note => {
+        counts.total++;
+        if (counts[note.pillar] !== undefined) counts[note.pillar]++;
+        if (counts[note.color] !== undefined) counts[note.color]++;
+        counts.votes += (note.votes || 0);
+
+        if (currentFilter !== 'all' && note.color !== currentFilter) {
+          return;
+        }
+
+        const container = document.getElementById(`pillar-${note.pillar}`);
+        if (container) {
+          container.appendChild(createPostItElement(note));
+        }
+      });
+
+      pillars.forEach(p => {
+        const container = document.getElementById(`pillar-${p}`);
+        if (container && container.children.length === 0) {
+          container.innerHTML = `
+            <div class="h-32 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center text-center p-4 text-slate-400">
+              <i class="fa-regular fa-note-sticky text-xl mb-1 text-slate-400"></i>
+              <span class="text-xs">Aucun post-it ici pour l'instant</span>
+              <button onclick="quickAddPostIt('${p}')" class="mt-2 text-[11px] text-[#e87082] hover:underline font-semibold">
+                + Ajouter une note
+              </button>
+            </div>
+          `;
+        }
+      });
+
+      pillars.forEach(p => {
+        const countBadge = document.getElementById(`colCount-${p}`);
+        if (countBadge) countBadge.innerText = counts[p];
+      });
+
+      document.getElementById('count-all').innerText = counts.total;
+      document.getElementById('count-green').innerText = counts.green;
+      document.getElementById('count-red').innerText = counts.red;
+      document.getElementById('count-blue').innerText = counts.blue;
+
+      document.getElementById('totalStickyCount').innerText = counts.total;
+      document.getElementById('totalVotesCount').innerText = counts.votes;
+    }
+
+    function createPostItElement(note) {
+      const card = document.createElement('div');
+      card.className = `postit-enter rounded-xl p-3.5 border transition-all duration-200 shadow-sm flex flex-col justify-between gap-3 relative group ${getColorClasses(note.color)}`;
+      card.dataset.id = note.id;
+
+      const timeAgo = formatTimeAgo(note.timestamp);
+      const isOwner = note.author === currentUser || currentUser.includes('Squad Leader') || currentUser.includes('Tribe Leader');
+
+      card.innerHTML = `
+        <div class="space-y-2">
+          <!-- Card Header / Meta -->
+          <div class="flex items-center justify-between text-[11px] gap-2">
+            <div class="flex items-center gap-1.5 font-bold tracking-tight truncate text-slate-800">
+              <span class="w-2 h-2 rounded-full ${getStatusDot(note.color)}"></span>
+              <span class="truncate">${escapeHtml(note.author)}</span>
+            </div>
+            <div class="flex items-center gap-1 text-[10px] text-slate-500 shrink-0">
+              <span>${timeAgo}</span>
+              ${isOwner ? `
+                <button onclick="deletePostIt('${note.id}')" title="Supprimer" class="opacity-0 group-hover:opacity-100 ml-1 text-slate-400 hover:text-red-500 transition p-0.5">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Content Text -->
+          <p class="text-xs sm:text-[13px] leading-relaxed text-slate-800 font-medium whitespace-pre-wrap select-text">
+            ${escapeHtml(note.text)}
+          </p>
+        </div>
+
+        <!-- Card Footer: Tag & Upvote Button -->
+        <div class="flex items-center justify-between pt-2 border-t border-slate-300/60 mt-1">
+          <div class="flex items-center gap-1.5">
+            ${note.needHelp && note.needHelp !== 'Non' ? `
+              <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#efeadc] text-amber-900 border border-[#ded5be]">
+                <i class="fa-solid fa-triangle-exclamation mr-0.5 text-amber-700"></i> ${escapeHtml(note.needHelp)}
+              </span>
+            ` : `
+              <span class="text-[10px] text-slate-500 font-mono">${getCategoryLabel(note.color)}</span>
+            `}
+          </div>
+
+          <!-- Live Voting Button -->
+          <button onclick="voteForNote('${note.id}')" class="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm">
+            <i class="fa-solid fa-heart ${note.votes > 0 ? 'text-[#e87082]' : 'text-slate-400'}"></i>
+            <span class="font-mono">${note.votes || 0}</span>
+          </button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    function getColorClasses(color) {
+      switch (color) {
+        case 'green':
+          return 'bg-[#d7ebe7] border-[#b2dad2] text-teal-900';
+        case 'red':
+          return 'bg-[#fddade] border-[#fca2ae] text-rose-950';
+        case 'blue':
+        default:
+          return 'bg-[#efeadc] border-[#ded5be] text-amber-950';
+      }
+    }
+
+    function getStatusDot(color) {
+      switch (color) {
+        case 'green': return 'bg-teal-600';
+        case 'red': return 'bg-rose-500';
+        default: return 'bg-amber-600';
+      }
+    }
+
+    function getCategoryLabel(color) {
+      switch (color) {
+        case 'green': return 'Fluide';
+        case 'red': return 'Bloquant';
+        default: return 'Angle mort';
+      }
+    }
+
+    // ==========================================
+    // ACTIONS: ADD, VOTE, DELETE
+    // ==========================================
+    function quickAddPostIt(pillar) {
+      currentPillarTarget = pillar;
+      document.getElementById('inputPillar').value = pillar;
+      openNewPostItModal();
+    }
+
+    function openNewPostItModal() {
+      document.getElementById('inputAuthor').value = currentUser;
+      document.getElementById('inputText').value = '';
+      document.getElementById('modalPostItTitle').innerText = 'Poser un Post-It';
+      document.getElementById('postItModal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('inputText').focus(), 50);
+    }
+
+    function closePostItModal() {
+      document.getElementById('postItModal').classList.add('hidden');
+    }
+
+    function handlePostItSubmit(e) {
+      e.preventDefault();
+      const text = document.getElementById('inputText').value.trim();
+      const pillar = document.getElementById('inputPillar').value;
+      const author = document.getElementById('inputAuthor').value.trim() || currentUser;
+      const needHelp = document.getElementById('inputNeedHelp').value;
+      
+      const colorRadio = document.querySelector('input[name="postItColor"]:checked');
+      const color = colorRadio ? colorRadio.value : 'red';
+
+      if (!text) return;
+
+      const newNote = {
+        id: 'note-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+        pillar,
+        color,
+        text,
+        author,
+        needHelp,
+        timestamp: Date.now(),
+        votes: 1
+      };
+
+      boardData.notes.unshift(newNote);
+      saveStateAndBroadcast();
+      closePostItModal();
+      showToast('Post-it publié avec succès !', 'success');
+    }
+
+    function voteForNote(noteId) {
+      const note = boardData.notes.find(n => n.id === noteId);
+      if (note) {
+        note.votes = (note.votes || 0) + 1;
+        saveStateAndBroadcast();
+        playClickSound();
+        showToast('+1 vote ajouté !', 'info');
+      }
+    }
+
+    function deletePostIt(noteId) {
+      boardData.notes = boardData.notes.filter(n => n.id !== noteId);
+      saveStateAndBroadcast();
+      showToast('Post-it retiré.', 'info');
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('ring-2', 'ring-[#fca2ae]');
+      });
+      const activeBtn = document.getElementById(`filter-${filter}`);
+      if (activeBtn) activeBtn.classList.add('ring-2', 'ring-[#fca2ae]');
+      renderBoard();
+    }
+
+    // ==========================================
+    // AUDIO CUES & TIMER SYSTEM (Web Audio API)
+    // ==========================================
+    let timerDuration = 5 * 60;
+    let timerRemaining = timerDuration;
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timerDisplay');
+      if (display) {
+        display.innerText = formatTime(timerRemaining);
+        if (timerRemaining <= 60 && timerRemaining > 0) {
+          display.className = 'flex items-center gap-2 font-mono text-xl sm:text-2xl font-bold tracking-wider text-rose-600 animate-pulse px-2';
+        } else {
+          display.className = 'flex items-center gap-2 font-mono text-xl sm:text-2xl font-bold tracking-wider text-[#e87082] px-2';
+        }
+      }
+    }
+
+    function toggleTimer() {
+      if (isTimerRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (timerRemaining <= 0) timerRemaining = timerDuration;
+      isTimerRunning = true;
+      document.getElementById('timerPlayIcon').className = 'fa-solid fa-pause';
+      document.getElementById('timerPlayText').innerText = 'Pause';
+      document.getElementById('startTimerBtn').classList.replace('bg-[#fca2ae]', 'bg-amber-300');
+
+      timerInterval = setInterval(() => {
+        timerRemaining--;
+        updateTimerDisplay();
+
+        if (timerRemaining <= 0) {
+          pauseTimer();
+          playChimeSound();
+          showToast('⏳ Le temps est écoulé ! Passons à la mise en commun.', 'warning');
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isTimerRunning = false;
+      clearInterval(timerInterval);
+      document.getElementById('timerPlayIcon').className = 'fa-solid fa-play';
+      document.getElementById('timerPlayText').innerText = 'Reprendre';
+      document.getElementById('startTimerBtn').classList.replace('bg-amber-300', 'bg-[#fca2ae]');
+    }
+
+    function resetTimer(minutes) {
+      pauseTimer();
+      timerDuration = minutes * 60;
+      timerRemaining = timerDuration;
+      updateTimerDisplay();
+      document.getElementById('timerPlayText').innerText = `Démarrer (${minutes} min)`;
+      showToast(`Minuteur calé sur ${minutes} minutes.`, 'info');
+    }
+
+    function playChimeSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.12);
+          gain.gain.setValueAtTime(0.2, audioCtx.currentTime + idx * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + idx * 0.12 + 1.2);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(audioCtx.currentTime + idx * 0.12);
+          osc.stop(audioCtx.currentTime + idx * 0.12 + 1.2);
+        });
+      } catch (err) {
+        console.warn('Audio not allowed yet without user interaction', err);
+      }
+    }
+
+    function playClickSound() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } catch(e){}
+    }
+
+    // ==========================================
+    // EXPORT & TEAMS/SLACK SUMMARY GENERATOR
+    // ==========================================
+    function openExportModal() {
+      generateSummaryMarkdown();
+      document.getElementById('exportModal').classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+      document.getElementById('exportModal').classList.add('hidden');
+    }
+
+    function generateSummaryMarkdown() {
+      const redNotes = boardData.notes.filter(n => n.color === 'red').sort((a,b) => (b.votes||0) - (a.votes||0));
+      const blueNotes = boardData.notes.filter(n => n.color === 'blue').sort((a,b) => (b.votes||0) - (a.votes||0));
+      const greenNotes = boardData.notes.filter(n => n.color === 'green').sort((a,b) => (b.votes||0) - (a.votes||0));
+
+      document.getElementById('summaryGreenCount').innerText = greenNotes.length;
+      document.getElementById('summaryRedCount').innerText = redNotes.length;
+      document.getElementById('summaryBlueCount').innerText = blueNotes.length;
+
+      let md = `🚀 **COMPTE-RENDU INSTANCE CM COMMUNITY • ATELIER DES 4 PILIERS**\n`;
+      md += `*Tribe DHC • ${new Date().toLocaleDateString('fr-FR')}*\n\n`;
+
+      md += `### 🔴 TOP DES IRRITANTS TERRAIN (À TRAITER EN PRIORITÉ)\n`;
+      if (redNotes.length === 0) {
+        md += `_Aucun irritant critique signalé._\n`;
+      } else {
+        redNotes.slice(0, 4).forEach((n, idx) => {
+          md += `${idx + 1}. **[${getPillarName(n.pillar)}]** ${n.text} _(Remonté par ${n.author} • ❤️ ${n.votes||0} votes)_\n`;
+        });
+      }
+
+      md += `\n### 🟡 ANGLES MORTS & IDÉES PROPOSÉES PAR LES CM\n`;
+      if (blueNotes.length === 0) {
+        md += `_Aucune proposition enregistrée._\n`;
+      } else {
+        blueNotes.slice(0, 3).forEach((n, idx) => {
+          md += `• **[${getPillarName(n.pillar)}]** ${n.text} _(${n.author})_\n`;
+        });
+      }
+
+      md += `\n### 🟢 CE QUI TOURNE BIEN SUR LE TERRAIN\n`;
+      if (greenNotes.length === 0) {
+        md += `_Pas de retour spécifique._\n`;
+      } else {
+        greenNotes.slice(0, 3).forEach(n => {
+          md += `• ${n.text} _(${n.author})_\n`;
+        });
+      }
+
+      md += `\n### 📋 ENGAGEMENTS RÉCIPROQUES DU JOUR\n`;
+      md += `1. **Rigueur CM :** 100% CRA validés avant le 28 & remontée fins de mission M-2.\n`;
+      md += `2. **Support Squad/Tribe Leader :** Outillage immédiat (modèles de relances prêts à l'emploi) & parrainage du nouveau CM.\n`;
+
+      document.getElementById('summaryMarkdown').value = md;
+    }
+
+    function getPillarName(pillar) {
+      switch (pillar) {
+        case 'admin': return 'Socle Admin';
+        case 'staffing': return 'Radar Staffing';
+        case 'career': return 'Compétences/Certifs';
+        case 'retention': return 'Lien & Rétention';
+        default: return pillar;
+      }
+    }
+
+    function copySummaryToClipboard() {
+      const textarea = document.getElementById('summaryMarkdown');
+      textarea.select();
+      textarea.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        const btnText = document.getElementById('copyButtonText');
+        const btnIcon = document.getElementById('copyIcon');
+        btnText.innerText = 'Copié dans le presse-papier !';
+        btnIcon.className = 'fa-solid fa-check';
+        showToast('Synthèse copiée ! Prête à coller dans Teams/Slack.', 'success');
+        setTimeout(() => {
+          btnText.innerText = 'Copier pour Teams / Slack';
+          btnIcon.className = 'fa-regular fa-copy';
+        }, 2500);
+      } catch (err) {
+        showToast('Erreur lors de la copie manuelle.', 'warning');
+      }
+    }
+
+    function downloadJsonBackup() {
+      const blob = new Blob([JSON.stringify(boardData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `atelier-cm-tribe-dhc-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Sauvegarde JSON téléchargée.', 'info');
+    }
+
+    // ==========================================
+    // "POURQUOI" & ROOM MODALS
+    // ==========================================
+    function openWhyModal() {
+      document.getElementById('whyModal').classList.remove('hidden');
+    }
+    function closeWhyModal() {
+      document.getElementById('whyModal').classList.add('hidden');
+    }
+
+    function toggleRoomModal() {
+      const modal = document.getElementById('roomModal');
+      modal.classList.toggle('hidden');
+    }
+
+    function initShareUrl() {
+      const hash = window.location.hash || '#room=tribe-dhc-session';
+      if (!window.location.hash) {
+        window.location.hash = hash;
+      }
+      const fullUrl = window.location.href;
+      const input = document.getElementById('shareRoomUrl');
+      if (input) input.value = fullUrl;
+    }
+
+    function copyShareUrl() {
+      const input = document.getElementById('shareRoomUrl');
+      input.select();
+      document.execCommand('copy');
+      showToast('Lien de session copié ! Envoyez-le à vos 9 CM.', 'success');
+    }
+
+    // ==========================================
+    // PEERJS LIVE WEBRTC SYNC (ZERO SERVER CONFIG)
+    // ==========================================
+    let peer = null;
+    let peerConnections = [];
+
+    function initPeerSync() {
+      const roomHash = window.location.hash ? window.location.hash.replace('#', '') : 'room=tribe-dhc';
+      const cleanRoom = roomHash.replace(/[^a-zA-Z0-9_-]/g, '');
+
+      try {
+        const myPeerId = `cm-dhc-${cleanRoom}-${Math.random().toString(36).substr(2, 6)}`;
+        peer = new Peer(myPeerId, { debug: 1 });
+
+        peer.on('open', () => {
+          document.getElementById('roomStatusText').innerText = 'Connecté (Live)';
+          updatePeerBadge();
+        });
+
+        peer.on('connection', (conn) => {
+          setupConnection(conn);
+          setTimeout(() => {
+            conn.send({ type: 'SYNC', payload: boardData });
+          }, 300);
+        });
+
+        peer.on('error', (err) => {
+          console.warn('PeerJS fallback to local/broadcast:', err);
+          document.getElementById('roomStatusText').innerText = 'Mode Local';
+          document.getElementById('livePulse').classList.remove('animate-ping');
+          document.getElementById('liveDot').classList.replace('bg-emerald-500', 'bg-amber-500');
+        });
+
+      } catch (e) {
+        console.warn('WebRTC fallback to local storage and broadcast active.', e);
+      }
+    }
+
+    function setupConnection(conn) {
+      peerConnections.push(conn);
+      updatePeerBadge();
+
+      conn.on('data', (data) => {
+        if (data && data.type === 'SYNC') {
+          boardData = data.payload;
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(boardData));
+          renderBoard();
+        }
+      });
+
+      conn.on('close', () => {
+        peerConnections = peerConnections.filter(c => c !== conn);
+        updatePeerBadge();
+      });
+    }
+
+    function broadcastToPeers(message) {
+      peerConnections.forEach(conn => {
+        if (conn.open) {
+          conn.send(message);
+        }
+      });
+    }
+
+    function updatePeerBadge() {
+      const badge = document.getElementById('connectedPeersCount');
+      if (badge) {
+        badge.innerText = `${peerConnections.length + 1} participant(s)`;
+      }
+    }
+
+    // ==========================================
+    // SEED SAMPLE DATA & UTILS
+    // ==========================================
+    function loadSampleDiscussionData() {
+      boardData.notes = [
+        // Pilier 1 : Socle Admin
+        {
+          id: 's-1',
+          pillar: 'admin',
+          color: 'red',
+          text: 'Validation CRA : Le 28 du mois tombe souvent en plein rush client. On passe 2h à relancer 5 consultants par WhatsApp/Teams.',
+          author: 'Career Manager 2',
+          needHelp: 'Oui - Outil',
+          timestamp: Date.now() - 3600000,
+          votes: 6
+        },
+        {
+          id: 's-2',
+          pillar: 'admin',
+          color: 'red',
+          text: 'Ordres de mission : Démarches peu claires sur les renouvellements. Risque de mission active sans ODM formel.',
+          author: 'Nouveau Career Manager (<2 mois)',
+          needHelp: 'Oui - Formation',
+          timestamp: Date.now() - 3000000,
+          votes: 5
+        },
+        {
+          id: 's-3',
+          pillar: 'admin',
+          color: 'green',
+          text: 'Règle des congés de fin d’année à S-4 : très efficace pour verrouiller les fermetures sites clients dès novembre.',
+          author: 'Squad Leader Platforms',
+          needHelp: 'Non',
+          timestamp: Date.now() - 2500000,
+          votes: 2
+        },
+
+        // Pilier 2 : Radar Biz & Staffing
+        {
+          id: 's-4',
+          pillar: 'staffing',
+          color: 'red',
+          text: 'Fins de mission M-2 : Nous n’avons pas de vue centrale sur les avenants signés avec les achats clients. On l’apprend par le consultant à M-3 semaines.',
+          author: 'Career Manager 3',
+          needHelp: 'Oui - Outil',
+          timestamp: Date.now() - 2200000,
+          votes: 7
+        },
+        {
+          id: 's-5',
+          pillar: 'staffing',
+          color: 'blue',
+          text: 'Idée : Créer un canal d’escalade direct CM <-> Resource Manager tous les 15 du mois pour faire le point fin de contrat.',
+          author: 'Tribe Leader DHC',
+          needHelp: 'Non',
+          timestamp: Date.now() - 1900000,
+          votes: 4
+        },
+
+        // Pilier 3 : Compétences & Carrière
+        {
+          id: 's-6',
+          pillar: 'career',
+          color: 'green',
+          text: 'Objectif certifs AWS & Terraform : Les consultants de la Tribe DHC sont hyper moteurs sur les vouchers.',
+          author: 'Career Manager 1 (Senior)',
+          needHelp: 'Non',
+          timestamp: Date.now() - 1500000,
+          votes: 3
+        },
+        {
+          id: 's-7',
+          pillar: 'career',
+          color: 'red',
+          text: 'EAA : Préparer 6 entretiens annuels sur le budget d’un jour/mois est mathématiquement infaisable en décembre sans déborder le soir.',
+          author: 'Career Manager 4',
+          needHelp: 'Oui - Temps',
+          timestamp: Date.now() - 1100000,
+          votes: 8
+        },
+
+        // Pilier 4 : Lien & Rétention RH
+        {
+          id: 's-8',
+          pillar: 'retention',
+          color: 'blue',
+          text: 'Proximité : Remplacer l’entretien mensuel d’une heure par 2 cafés visio de 15 min + un déjeuner trimestriel sur site.',
+          author: 'Squad Leader Platforms',
+          needHelp: 'Non',
+          timestamp: Date.now() - 800000,
+          votes: 5
+        },
+        {
+          id: 's-9',
+          pillar: 'retention',
+          color: 'red',
+          text: 'Signaux faibles : Les consultants 100% télétravail se sentent parfois coupés de Devoteam. Besoin d’événements informels squad.',
+          author: 'Career Manager 5',
+          needHelp: 'Non',
+          timestamp: Date.now() - 400000,
+          votes: 4
+        }
+      ];
+
+      saveStateAndBroadcast();
+      showToast('Jeu de discussion réaliste DHC chargé !', 'success');
+    }
+
+    function confirmClearBoard() {
+      boardData.notes = [];
+      saveStateAndBroadcast();
+      showToast('Tableau réinitialisé.', 'warning');
+    }
+
+    function formatTimeAgo(timestamp) {
+      const diff = Math.floor((Date.now() - timestamp) / 60000);
+      if (diff < 1) return "À l'instant";
+      if (diff < 60) return `Il y a ${diff}m`;
+      const hours = Math.floor(diff / 60);
+      return `Il y a ${hours}h`;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      let borderCol = 'border-slate-300 bg-white text-slate-800';
+      if (type === 'success') borderCol = 'border-[#b2dad2] bg-[#d7ebe7] text-teal-900';
+      if (type === 'warning') borderCol = 'border-[#fca2ae] bg-[#fddade] text-rose-900';
+
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border ${borderCol} shadow-lg text-xs font-semibold flex items-center gap-2.5 transition-all duration-300 transform translate-y-2 opacity-0`;
+      toast.innerHTML = `
+        <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-teal-700' : type === 'warning' ? 'fa-triangle-exclamation text-rose-700' : 'fa-info-circle text-slate-600'}"></i>
+        <span>${message}</span>
+      `;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-4');
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+  </script>
+</body>
+</html>
