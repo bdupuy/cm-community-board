@@ -125,12 +125,6 @@
           </button>
         </div>
 
-        <!-- Cheat sheet "Pourquoi ?" button for SL & TL -->
-        <button onclick="openWhyModal()" class="px-3 py-1.5 rounded-xl bg-[#efeadc] hover:bg-[#e4ddcb] text-slate-800 border border-[#ded5be] text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Mémo des impacts Devoteam pour le Tribe Leader & Squad Leader">
-          <i class="fa-solid fa-lightbulb text-amber-500"></i>
-          <span class="hidden sm:inline">Mémo Sens Biz</span>
-        </button>
-
         <!-- New Post-it trigger -->
         <button onclick="openNewPostItModal()" class="px-3.5 py-1.5 rounded-xl bg-[#fca2ae] hover:bg-[#fb8e9d] text-slate-900 text-xs font-bold flex items-center gap-1.5 transition shadow-sm">
           <i class="fa-solid fa-plus"></i>
@@ -153,7 +147,7 @@
       
       <!-- Instructions & Context -->
       <div class="flex items-center gap-2 text-slate-700">
-        <i class="fa-solid fa-stopwatch text-[#e87082] text-sm"></i>
+        <i class="fa-solid fa-lightbulb text-[#e87082] text-sm"></i>
         <span><strong>Consigne Tribe DHC :</strong> 1 carte = 1 idée ou 1 irritant.</span>
       </div>
 
@@ -180,7 +174,7 @@
   <!-- MAIN BOARD: 4 PILLARS COLUMNS -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
 
-    <!-- PILIER 1: SOCLE ADMIN & CONTRAT -->
+    <!-- PILIER 1: SOCLE ADMIN -->
     <div class="flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden" data-pillar="admin">
       <!-- Column Header -->
       <div class="p-3.5 bg-[#efeadc]/50 border-b border-slate-200 flex items-center justify-between">
@@ -193,7 +187,7 @@
               1. Socle Admin
               <span id="colCount-admin" class="text-[11px] font-mono px-1.5 py-0.2 bg-white text-slate-600 rounded-md border border-slate-200">0</span>
             </h2>
-            <p class="text-[11px] text-slate-500">CRA, Congés, ODM, Formations...</p>
+            <p class="text-[11px] text-slate-500">CRA, Congés S-4, ODM, Frais...</p>
           </div>
         </div>
         <button onclick="quickAddPostIt('admin')" title="Ajouter dans Socle Admin" class="w-7 h-7 rounded-lg bg-white hover:bg-[#fca2ae] text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition shadow-sm">
@@ -220,7 +214,7 @@
               2. Radar Biz &amp; Staffing
               <span id="colCount-staffing" class="text-[11px] font-mono px-1.5 py-0.2 bg-white text-slate-600 rounded-md border border-slate-200">0</span>
             </h2>
-            <p class="text-[11px] text-slate-500">Fins de mission, Switchs, IM...</p>
+            <p class="text-[11px] text-slate-500">Fins de mission M-2, intercontrat...</p>
           </div>
         </div>
         <button onclick="quickAddPostIt('staffing')" title="Ajouter dans Radar Staffing" class="w-7 h-7 rounded-lg bg-white hover:bg-[#fca2ae] text-slate-600 hover:text-slate-900 border border-slate-200 flex items-center justify-center transition shadow-sm">
@@ -302,10 +296,6 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <button onclick="loadSampleDiscussionData()" class="text-slate-600 hover:text-slate-900 transition underline">
-          Charger exemples DHC
-        </button>
-        <span>•</span>
         <button onclick="confirmClearBoard()" class="text-rose-600 hover:text-rose-700 transition">
           Réinitialiser le tableau
         </button>
@@ -334,7 +324,7 @@
           <label class="block text-xs font-semibold text-slate-700 mb-1.5">Pilier concerné</label>
           <select id="inputPillar" class="w-full bg-[#efeeee] border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:border-[#fca2ae]">
             <option value="admin">1. Socle Admin (CRA, Congés, ODM...)</option>
-            <option value="staffing">2. Radar Biz & Staffing (Fins de mission, switchs, IM...)</option>
+            <option value="staffing">2. Radar Biz & Staffing (Fins de mission, Switchs, IM...)</option>
             <option value="career">3. Compétences & Carrière (Certifs, MYR/EYR...)</option>
             <option value="retention">4. Lien & Rétention RH (Proximité, moral, rituels...)</option>
           </select>
@@ -397,94 +387,6 @@
           </button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- MODAL: LE "POURQUOI" / MÉMO BUSINESS POUR LE SQUAD & TRIBE LEADER -->
-  <div id="whyModal" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-[#efeadc] text-amber-700 flex items-center justify-center">
-            <i class="fa-solid fa-lightbulb"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-bold text-slate-800">Mémo Facilitateur : Le "Pourquoi" des Process</h3>
-            <p class="text-xs text-slate-500">Tribe DHC • Arguments pour le Squad Leader et le Tribe Leader pendant le débat</p>
-          </div>
-        </div>
-        <button onclick="closeWhyModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
-          <i class="fa-solid fa-xmark text-lg"></i>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-        <!-- Socle Admin -->
-        <div class="bg-[#efeadc]/40 p-4 rounded-xl border border-[#ded5be] space-y-2">
-          <div class="flex items-center gap-2 text-amber-800 font-bold">
-            <i class="fa-solid fa-file-invoice"></i>
-            <span>Socle Admin & CRA</span>
-          </div>
-          <p class="text-slate-700 leading-relaxed">
-            <strong>Impact Devoteam :</strong> Un CRA non validé au 28 bloque l'édition de la facture client. Pour 60 consultants dans la Tribe DHC, c'est directement des centaines de milliers d'euros de BFR en souffrance.
-          </p>
-          <p class="text-slate-600">
-            <strong>ODM :</strong> Couverture accident du travail. En cas d'accident sur site sans ODM signé, Devoteam est pénalement et juridiquement vulnérable.
-          </p>
-        </div>
-
-        <!-- Radar Biz & Staffing -->
-        <div class="bg-[#d7ebe7]/40 p-4 rounded-xl border border-[#b2dad2] space-y-2">
-          <div class="flex items-center gap-2 text-teal-800 font-bold">
-            <i class="fa-solid fa-crosshairs"></i>
-            <span>Radar Staffing (M-2)</span>
-          </div>
-          <p class="text-slate-700 leading-relaxed">
-            <strong>Impact Devoteam :</strong> Détecter une fin de mission à M-1 mène quasi-systématiquement à l'intercontrat subi (salaire sans facturation).
-          </p>
-          <p class="text-slate-600">
-            <strong>Bénéfice consultant :</strong> À M-2, les Sales et le RM ont le temps de lui trouver une mission conforme à ses souhaits tech.
-          </p>
-        </div>
-
-        <!-- Compétences & Carrière -->
-        <div class="bg-[#fddade]/40 p-4 rounded-xl border border-[#fca2ae] space-y-2">
-          <div class="flex items-center gap-2 text-rose-800 font-bold">
-            <i class="fa-solid fa-graduation-cap"></i>
-            <span>Compétences & Certifs</span>
-          </div>
-          <p class="text-slate-700 leading-relaxed">
-            <strong>Impact Devoteam :</strong> Maintien des partenariats Premium éditeurs et levier n°1 de revalorisation de nos TJM.
-          </p>
-          <p class="text-slate-600">
-            <strong>Bénéfice consultant :</strong> Employabilité, visibilité sur le marché et motivation renouvelée.
-          </p>
-        </div>
-
-        <!-- Lien & Rétention RH -->
-        <div class="bg-[#fca2ae]/30 p-4 rounded-xl border border-[#fca2ae] space-y-2">
-          <div class="flex items-center gap-2 text-rose-900 font-bold">
-            <i class="fa-solid fa-heart-pulse"></i>
-            <span>Lien & Rétention RH</span>
-          </div>
-          <p class="text-slate-700 leading-relaxed">
-            <strong>Impact Devoteam :</strong> Le coût de remplacement d'un consultant parti par frustration est estimé à 6-9 mois de marge brute.
-          </p>
-          <p class="text-slate-600">
-            <strong>Rôle du CM :</strong> Capter les signaux faibles (sentiment d'isolement, micro-conflits) avant la lettre de démission.
-          </p>
-        </div>
-      </div>
-
-      <div class="p-3 bg-[#fddade]/60 border border-[#fca2ae] rounded-xl text-xs text-rose-900">
-        💡 <strong>Posture de co-animation Tribe DHC :</strong> <em>"Le but n'est pas de vous transformer en administratifs. Le but est de créer un cadre sans friction pour que vos 7-8h mensuelles aillent là où vous avez une vraie valeur humaine."</em>
-      </div>
-
-      <div class="flex justify-end">
-        <button onclick="closeWhyModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold">
-          Fermer
-        </button>
-      </div>
     </div>
   </div>
 
@@ -609,7 +511,7 @@
     // ==========================================
     // STATE & DATA MANAGEMENT
     // ==========================================
-    const STORAGE_KEY = 'devoteam_dhc_cm_workshop_v2';
+    const STORAGE_KEY = 'devoteam_dhc_cm_workshop_v3';
     const ROOM_KEY = 'dhc_workshop_room';
 
     let currentFilter = 'all';
@@ -675,7 +577,8 @@
         if (saved) {
           boardData = JSON.parse(saved);
         } else {
-          loadDefaultIntroNotes();
+          boardData.notes = [];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(boardData));
         }
       } catch (e) {
         console.error('Error loading data', e);
@@ -689,42 +592,6 @@
       }
       broadcastToPeers({ type: 'SYNC', payload: boardData });
       renderBoard();
-    }
-
-    function loadDefaultIntroNotes() {
-      boardData.notes = [
-        {
-          id: 'note-sample-1',
-          pillar: 'admin',
-          color: 'red',
-          text: 'CRA : Les consultants oublient la date limite du 28. Beaucoup de temps perdu en relances individuelles le soir.',
-          author: 'Squad Leader Platforms',
-          needHelp: 'Oui - Outil',
-          timestamp: Date.now() - 3600000,
-          votes: 3
-        },
-        {
-          id: 'note-sample-2',
-          pillar: 'staffing',
-          color: 'blue',
-          text: 'Comment formaliser l’alerte fin de mission à M-2 vers le RM et les Sales sans passer par un tableau opaque ?',
-          author: 'Tribe Leader DHC',
-          needHelp: 'Non',
-          timestamp: Date.now() - 1800000,
-          votes: 4
-        },
-        {
-          id: 'note-sample-3',
-          pillar: 'retention',
-          color: 'green',
-          text: 'Les Tech Talks mensuels de la Tribe DHC aident énormément à garder le contact informel avec les consultants en régie.',
-          author: 'Career Manager 1 (Senior)',
-          needHelp: 'Non',
-          timestamp: Date.now() - 900000,
-          votes: 2
-        }
-      ];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(boardData));
     }
 
     // ==========================================
@@ -1157,15 +1024,8 @@
     }
 
     // ==========================================
-    // "POURQUOI" & ROOM MODALS
+    // ROOM MODAL & LINK SHARING
     // ==========================================
-    function openWhyModal() {
-      document.getElementById('whyModal').classList.remove('hidden');
-    }
-    function closeWhyModal() {
-      document.getElementById('whyModal').classList.add('hidden');
-    }
-
     function toggleRoomModal() {
       const modal = document.getElementById('roomModal');
       modal.classList.toggle('hidden');
@@ -1260,113 +1120,8 @@
     }
 
     // ==========================================
-    // SEED SAMPLE DATA & UTILS
+    // UTILS
     // ==========================================
-    function loadSampleDiscussionData() {
-      boardData.notes = [
-        // Pilier 1 : Socle Admin
-        {
-          id: 's-1',
-          pillar: 'admin',
-          color: 'red',
-          text: 'Validation CRA : Le 28 du mois tombe souvent en plein rush client. On passe 2h à relancer 5 consultants par chat ou mail.',
-          author: 'Career Manager 2',
-          needHelp: 'Oui - Outil',
-          timestamp: Date.now() - 3600000,
-          votes: 6
-        },
-        {
-          id: 's-2',
-          pillar: 'admin',
-          color: 'red',
-          text: 'Ordres de mission : Démarches peu claires sur les renouvellements. Risque de mission active sans ODM formel.',
-          author: 'Nouveau Career Manager (<2 mois)',
-          needHelp: 'Oui - Formation',
-          timestamp: Date.now() - 3000000,
-          votes: 5
-        },
-        {
-          id: 's-3',
-          pillar: 'admin',
-          color: 'green',
-          text: 'Règle des congés de fin d’année à S-4 : très efficace pour verrouiller les fermetures sites clients dès novembre.',
-          author: 'Squad Leader Platforms',
-          needHelp: 'Non',
-          timestamp: Date.now() - 2500000,
-          votes: 2
-        },
-
-        // Pilier 2 : Radar Biz & Staffing
-        {
-          id: 's-4',
-          pillar: 'staffing',
-          color: 'red',
-          text: 'Fins de mission : Nous n’avons pas de vue centrale sur les avenants. On l’apprend par le consultant.',
-          author: 'Career Manager 3',
-          needHelp: 'Oui - Outil',
-          timestamp: Date.now() - 2200000,
-          votes: 7
-        },
-        {
-          id: 's-5',
-          pillar: 'staffing',
-          color: 'blue',
-          text: 'Idée : Créer un canal d’escalade direct CM <-> Resource Manager tous les 15 du mois pour faire le point fin de contrat.',
-          author: 'Tribe Leader DHC',
-          needHelp: 'Non',
-          timestamp: Date.now() - 1900000,
-          votes: 4
-        },
-
-        // Pilier 3 : Compétences & Carrière
-        {
-          id: 's-6',
-          pillar: 'career',
-          color: 'green',
-          text: 'Objectif certifs AWS & Terraform : Les consultants de la Tribe DHC sont hyper moteurs sur les vouchers.',
-          author: 'Career Manager 1 (Senior)',
-          needHelp: 'Non',
-          timestamp: Date.now() - 1500000,
-          votes: 3
-        },
-        {
-          id: 's-7',
-          pillar: 'career',
-          color: 'red',
-          text: 'MYR/EYR : Préparer 5 ou 6 EYR sur le temps alloué d’1 jour/mois est mathématiquement infaisable en février sans déborder le soir.',
-          author: 'Career Manager 4',
-          needHelp: 'Oui - Temps',
-          timestamp: Date.now() - 1100000,
-          votes: 8
-        },
-
-        // Pilier 4 : Lien & Rétention RH
-        {
-          id: 's-8',
-          pillar: 'retention',
-          color: 'blue',
-          text: 'Proximité : Remplacer le CheckIn d’une heure par 2 cafés visio de 15 min + un déjeuner trimestriel sur site.',
-          author: 'Squad Leader Platforms',
-          needHelp: 'Non',
-          timestamp: Date.now() - 800000,
-          votes: 5
-        },
-        {
-          id: 's-9',
-          pillar: 'retention',
-          color: 'red',
-          text: 'Signaux faibles : Les consultants 100% télétravail se sentent parfois coupés de Devoteam. Besoin d’événements informels Tribe / Squad.',
-          author: 'Career Manager 5',
-          needHelp: 'Non',
-          timestamp: Date.now() - 400000,
-          votes: 4
-        }
-      ];
-
-      saveStateAndBroadcast();
-      showToast('Jeu de discussion réaliste DHC chargé !', 'success');
-    }
-
     function confirmClearBoard() {
       boardData.notes = [];
       saveStateAndBroadcast();
